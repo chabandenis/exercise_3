@@ -66,7 +66,7 @@ public class TestExe {
             }
 
             testExe.allCntTest++;
-            System.out.println("    ru.denisch.Test " + test);
+            System.out.println("    ru.denisch.Test  " + test);
             try {
                 test.invoke(object);
             } catch (Exception e) {
