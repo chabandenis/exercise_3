@@ -1,5 +1,7 @@
 package ru.denisch;
 
+import ru.denisch.cache.Test;
+
 public class TestExample {
     public static int i;
 

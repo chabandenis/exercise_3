@@ -1,4 +1,4 @@
-package ru.denisch;// библиотека для тестирования
+package ru.denisch.cache;// библиотека для тестирования
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

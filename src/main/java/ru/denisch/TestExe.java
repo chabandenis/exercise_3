@@ -1,11 +1,11 @@
 package ru.denisch;// запуск теста
 
 
+import ru.denisch.cache.Test;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class TestExe {
@@ -66,7 +66,7 @@ public class TestExe {
             }
 
             testExe.allCntTest++;
-            System.out.println("    ru.denisch.Test  " + test);
+            System.out.println("    ru.denisch.cache.Test  " + test);
             try {
                 test.invoke(object);
             } catch (Exception e) {
