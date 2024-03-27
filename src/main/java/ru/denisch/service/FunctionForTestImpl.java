@@ -2,7 +2,6 @@ package ru.denisch.service;
 
 import ru.denisch.cache.Cache;
 import ru.denisch.cache.Mutator;
-import ru.denisch.cache.Run;
 
 public class FunctionForTestImpl implements FunctionForTest {
     private int i;
@@ -15,7 +14,6 @@ public class FunctionForTestImpl implements FunctionForTest {
     }
 
     @Override
-    @Run
     @Cache
     public String getI() {
         System.out.println("    Исходная версия функции");
