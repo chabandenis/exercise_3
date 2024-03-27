@@ -6,14 +6,12 @@ import ru.denisch.cache.Mutator;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class FunctionForTestHadler implements InvocationHandler {
     private Object obj;
 
-    private Map<String,Object> setCache = new HashMap<>();
+    private Map<String, Object> setCache = new HashMap<>();
     private Map<String, Object> setMutator = new HashMap<>();
 
     public FunctionForTestHadler(Object obj) {
@@ -70,11 +68,10 @@ public class FunctionForTestHadler implements InvocationHandler {
 
         if (setCache.containsKey(method.getName())) {
             System.out.println("    есть аннотация кеширования");
-            if (setCache.get(method.getName())==null){
+            if (setCache.get(method.getName()) == null) {
                 setCache.put(method.getName(), method.invoke(obj, args));
-                System.out.println("    закешировали, в кеш " + setCache.get(method.getName()));
-            }
-            else{
+                System.out.println("    посчитали, в кеш " + setCache.get(method.getName()));
+            } else {
                 System.out.println("    Прочитали из кеша" + setCache.get(method.getName()));
                 return setCache.get(method.getName());
             }
@@ -83,8 +80,11 @@ public class FunctionForTestHadler implements InvocationHandler {
         } else {
             if (setMutator.containsKey(method.getName())) {
                 System.out.println("    мутатор");
-            }
-            else{
+                // сбросить кеш
+                for (String key: setCache.keySet()){
+                    setCache.put(key, null);
+                }
+            } else {
                 System.out.println("    Не мутатор");
             }
 
