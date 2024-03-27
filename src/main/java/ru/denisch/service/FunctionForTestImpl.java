@@ -13,7 +13,7 @@ public class FunctionForTestImpl implements FunctionForTest {
     public void setI(int i) {
         System.out.println("    Установили значение в исходном классе " + i);
         this.i = i;
-        cnt=0;
+        cnt = 0;
     }
 
     @Override
@@ -23,8 +23,7 @@ public class FunctionForTestImpl implements FunctionForTest {
         System.out.println("    Исходная версия функции");
         if (cnt >= 0) {
             cnt = 1;
-            return String.valueOf(i) + String.valueOf(i);
-        } else
-            return "";
+            return String.valueOf(i);
+        } else return "";
     }
 }
