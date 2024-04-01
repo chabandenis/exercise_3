@@ -1,5 +1,6 @@
 package ru.denisch;
 
+import ru.denisch.cache.FunctionForTestHadler;
 import ru.denisch.service.FunctionForTest;
 
 import java.lang.reflect.Proxy;

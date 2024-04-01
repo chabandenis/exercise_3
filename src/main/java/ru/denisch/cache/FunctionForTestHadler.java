@@ -1,18 +1,31 @@
-package ru.denisch;
-
-import ru.denisch.cache.Cache;
-import ru.denisch.cache.Mutator;
+package ru.denisch.cache;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class FunctionForTestHadler implements InvocationHandler {
     private Object obj;
 
-    private Map<String, Object> setCache = new HashMap<>();
+    // время жизни кеша в секундах
+    private final int timeLive = 2;
+
+    // методы для кеширования со значениями
+    private Set<String> setCache = new HashSet<>();
+
+    // методы изменяющие состояние кеша
     private Map<String, Object> setMutator = new HashMap<>();
+
+    // get методы, для сохранения статуса сообщения
+    private Set<Method> getMethods = new HashSet<>();
+
+    // мультикеш для всех состояний
+    private Map<String, CacheInfo> multiCache = new HashMap<>();
 
     public FunctionForTestHadler(Object obj) {
         System.out.println("Конструктор");
@@ -20,20 +33,22 @@ public class FunctionForTestHadler implements InvocationHandler {
 
         for (Method md : obj.getClass().getMethods()) {
             if (md.isAnnotationPresent(Cache.class)) {
-                setCache.put(md.getName(), null);
+                setCache.add(md.getName());
             }
             if (md.isAnnotationPresent(Mutator.class)) {
                 setMutator.put(md.getName(), null);
+            }
+            if (md.getName().matches("get\\S")) {
+                getMethods.add(md);
             }
         }
 
         System.out.println("методов с аннотацией @Cache " + setCache.size());
         System.out.println("методов с аннотацией @Mutator " + setMutator.size());
+        System.out.println("геттеры " + getMethods.size());
     }
 
     /*
-
-
         PlayableInvHadler(Object obj) {
             this.obj = obj;
             cashes = new HashMap<>();
@@ -51,44 +66,81 @@ public class FunctionForTestHadler implements InvocationHandler {
             Object value;
             Integer modCount;
         }
-
         private HashMap<String,Runnable> terminators;
-
-
     */
+
+    public void setValueInCache() {
+
+    }
+
+    // Получение состояние объекта. Вызываются все геты для получения ключа
+    public String getStrKeyValue() {
+        String retValue = "";
+        for (Method getMethod : getMethods) {
+            try {
+                retValue += getMethod.invoke(obj) + "; ";
+            } catch (Exception e) {
+
+            }
+        }
+
+        return retValue;
+    }
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         System.out.println("    method " + method);
 
-        if (setCache.containsKey(method.getName())
+
+        if (setCache.contains(method.getName())
                 && setMutator.containsKey(method.getName())) {
-            System.out.println("    и кеш и мутатор, просто вызываем метод");
+            System.out.println("        и кеш и мутатор, просто вызываем метод");
             return method.invoke(obj, args);
         }
 
-        if (setCache.containsKey(method.getName())) {
-            System.out.println("    есть аннотация кеширования");
-            if (setCache.get(method.getName()) == null) {
-                setCache.put(method.getName(), method.invoke(obj, args));
-                System.out.println("    посчитали, в кеш " + setCache.get(method.getName()));
+        if (setCache.contains(method.getName())) {
+            System.out.println("     есть аннотация кеширования");
+
+            // получить значения ключа
+            String keyValue = method.getName() + "; " + getStrKeyValue();
+            System.out.println("        Ключ для кеша " + keyValue);
+
+            if (multiCache.get(keyValue) == null) {
+                CacheInfo cacheInfo = new CacheInfo();
+                cacheInfo.setObj(method.invoke(obj, args));
+                cacheInfo.setTime(LocalDateTime.now());
+                multiCache.put(keyValue, cacheInfo);
+
+                System.out.println("        посчитали, в кеш " + multiCache.get(keyValue));
             } else {
-                System.out.println("    Прочитали из кеша" + setCache.get(method.getName()));
-                return setCache.get(method.getName());
+                // проверить актуальность кеша
+                long timeAfter = ChronoUnit.SECONDS.between(multiCache.get(keyValue).getTime(), LocalDateTime.now());
+
+                if (timeAfter > timeLive) {
+                    System.out.println("        Перевызов. Кеш потерял актуальность, прошло секунд " + timeAfter);
+                    return method.invoke(obj, args);
+                } else {
+                    System.out.println("        Прочитали из кеша" + multiCache.get(keyValue) + "; прошло секунд " + timeAfter);
+                    return multiCache.get(keyValue).getObj();
+                }
             }
 
-            return setCache.get(method.getName());
+            return multiCache.get(keyValue).getObj();
         } else {
             if (setMutator.containsKey(method.getName())) {
-                System.out.println("    мутатор");
+                System.out.println("        мутатор");
                 // сбросить кеш
-                for (String key: setCache.keySet()){
+/*
+                for (String key : setCache.keySet()) {
                     setCache.put(key, null);
                 }
+
+ */
             } else {
-                System.out.println("    Не мутатор");
+                System.out.println("        Не мутатор");
             }
 
-            System.out.println("    без кеша");
+            System.out.println("        перевызов");
             return method.invoke(obj, args);
         }
 
