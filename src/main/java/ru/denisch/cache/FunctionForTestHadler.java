@@ -27,6 +27,16 @@ public class FunctionForTestHadler implements InvocationHandler {
     // мультикеш для всех состояний
     private Map<String, CacheInfo> multiCache = new HashMap<>();
 
+    public Map<String, CacheInfo> getMultiCache() {
+        return multiCache;
+    }
+
+    public void setMultiCache(Map<String, CacheInfo> multiCache) {
+        this.multiCache = multiCache;
+    }
+
+
+
     public FunctionForTestHadler(Object obj) {
         System.out.println("Конструктор");
         this.obj = obj;
@@ -46,6 +56,10 @@ public class FunctionForTestHadler implements InvocationHandler {
         System.out.println("методов с аннотацией @Cache " + setCache.size());
         System.out.println("методов с аннотацией @Mutator " + setMutator.size());
         System.out.println("геттеры " + getMethods.size());
+
+        DelCache.setHadler(this);
+        Thread thread = new DelCache.MyThread();
+        thread.start();
     }
 
     /*
